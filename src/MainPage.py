@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from src.pages.Home import Home
 from src.pages.Upload import Upload
+from src.pages.ContactUs import ContactMe
 
 class MainPage:
     def __init__(self):
@@ -34,6 +35,7 @@ class MainPage:
             Home.Home()
         if selected=='Upload':
             Upload.Upload()
-                   
+        if selected=='Contact Us':
+            ContactMe.ContactMePage()
 
 
