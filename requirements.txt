@@ -1,0 +1,9 @@
+streamlit 
+streamlit-extras
+streamlit-option-menu
+pandas 
+numpy
+seaborn
+matplotlib
+openpyxl
+scipy
