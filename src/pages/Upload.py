@@ -120,16 +120,33 @@ class Check:
     def ModeDeviation(self,data,column,threshold=0.05):
         if column not in data.columns:
             st.write(f"Column '{column}' not found in DataFrame.")
-            return pd.DataFrame()  # Return an empty DataFrame or handle as appropriate
 
+        col1,col2=st.columns([1,1])
+        # Get frequency of each category
         frequency = data[column].value_counts()
-        st.write(frequency)
-        # mode_value = frequency.idxmax()
-        # mode_freq = frequency.max()
-        # outliers = frequency[frequency < threshold]
-        # outliers_df = pd.DataFrame(outliers, columns=['Frequency'])
-        # outliers_df['Deviation from Mode'] = mode_freq - outliers_df['Frequency']
-        # return outliers_df
+        
+        # Get the mode and its frequency
+        mode_value = frequency.idxmax()
+       
+        mode_freq = frequency.max()
+        
+
+        # Define the threshold as a percentage of the mode frequency
+        threshold_value = mode_freq * threshold
+        
+
+        # Filter out the categories with frequencies below the threshold
+        outliers = frequency[frequency < threshold_value]  # Updated condition
+
+        with col1:
+                 st.write(f"<h4>Mode:</h4> <h5 style='color: green'>{mode_value}</h5>",unsafe_allow_html=True)
+                 st.write(f"<h4>Mode Frequency:</h4> <h5 style='color: blue'>{mode_freq}</h5>",unsafe_allow_html=True)
+                 st.write(f"<h4>Threshold Value:</h4> <h5>{threshold_value}</h5>",unsafe_allow_html=True)
+        with col2:
+            st.write("Outliers:")
+            st.dataframe(outliers,use_container_width=True)
+
+        
   
         
     
@@ -253,18 +270,8 @@ class Check:
                                 None
 
                     elif SelectedNum=="Mode Deviation":
-                            outliers = self.ModeDeviation(self.data, CategoricOutliers)
-                            # col1, col2 = st.columns([1, 1])
-                            # with col1:                                
-                            #     if outliers is not None and not outliers.empty:
-                            #         st.markdown(f"**Outliers based on Mode Deviation:**")
-                            #         st.write(outliers)
-                            #     else:
-                            #         st.markdown("**No outliers found (Mode Deviation).**")
-
-                            with col2:
-                                None                            
-                        
+                            self.ModeDeviation(self.data, CategoricOutliers)
+                            
                         
             
             
