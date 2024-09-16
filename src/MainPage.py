@@ -14,7 +14,7 @@ class MainPage:
             layout='wide',            
         )
         st.markdown(""" 
-        <h2 style="background-color: #112639; border: 1px solid black; color: #e8e7e7; font-family: 'Times New Roman', serif; text-align: center; padding: 10px; border-radius: 5px;">
+        <h2 style="background-color: #112639; border: 1px solid black; color: white; font-family: 'Times New Roman', serif; text-align: center; padding: 10px; border-radius: 5px;">
             Qual-D
         </h2>
         """,unsafe_allow_html=True)
