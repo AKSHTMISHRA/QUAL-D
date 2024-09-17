@@ -101,8 +101,14 @@ class Check:
     
     def FrequencyAnalysis(self,data,column,threshold=0.05):
         frequency = self.data[column].value_counts(normalize=True)
-        rare_categories = frequency[frequency < threshold].index.tolist()
-        return rare_categories
+        rare_categories = frequency[frequency < threshold]
+        rare_categories_df = pd.DataFrame({
+            'Category': rare_categories.index,
+            'Frequency': self.data[column].value_counts().loc[rare_categories.index],
+            'Percentage': rare_categories.values * 100
+        }).reset_index(drop=True)
+
+        return rare_categories_df
     
     def gap_analysis(self, date_column, threshold='1D'):
         self.data = self.data.sort_values(by=date_column)
@@ -141,7 +147,7 @@ class Check:
         with col1:
                  st.write(f"<h4>Mode:</h4> <h5 style='color: green'>{mode_value}</h5>",unsafe_allow_html=True)
                  st.write(f"<h4>Mode Frequency:</h4> <h5 style='color: blue'>{mode_freq}</h5>",unsafe_allow_html=True)
-                 st.write(f"<h4>Threshold Value:</h4> <h5>{threshold_value}</h5>",unsafe_allow_html=True)
+                 st.write(f"<h4>Threshold Value:</h4> <h5 style='color: #FF5733'>{threshold_value}</h5>",unsafe_allow_html=True)
         with col2:
             st.write("Outliers:")
             st.dataframe(outliers,use_container_width=True)
@@ -155,48 +161,51 @@ class Check:
         
         ##########################################################################################################
         ##missing  value
-        st.text("1. Missing Values")
+        st.subheader("1. Missing Values and Duplicates")
         missing =self.data.isnull().sum()
         missing=missing[missing > 0]
         missing=missing.reset_index()
         missing.columns=['Column Names','Total Nulls']
-        st.dataframe(missing,use_container_width=True)
+        st.dataframe(missing,use_container_width=True,hide_index=True)
         value=missing['Total Nulls'].sum()
         st.markdown(f"""
-        <h5>Total Nulls in the Dataset: {value}</h5>
+        <h5>Total Nulls in the Dataset: <b style='color:Red'>{value}</b></h5>
         """,unsafe_allow_html=True)
+        
         ########################################################
         duplicates= self.data.duplicated().sum()
+        duplicatesDF=self.data[self.data.duplicated()]
         if duplicates<=0:
             st.markdown("""
-            <h5>Total Duplicates in the Dataset: None</h5>
+            <h5>Total Duplicates in the Dataset: <b style='color:Red'>None</b></h5>
             """,unsafe_allow_html=True)
         else: 
             st.markdown(f"""
-            <h5>Total Duplicates in the Dataset: {duplicates}</h5>
+            <h5>Total Duplicates in the Dataset: <b style='color:Red'>{duplicates}</b></h5>
             """,unsafe_allow_html=True)
+            st.dataframe(duplicatesDF,hide_index=True)
 
         ##
         ##########################################################################################################
         ## Empty columns
-        st.text("2. Null Columns")
+        st.subheader("2. Null Columns")
         EmptyColumns= [col for col in self.data.columns if self.data[col].isnull().all()]
         if len(EmptyColumns)<=0:
             st.markdown("""
-            <h5>Total Null columns in the Dataset: None</h5>
+            <h5>Total Null columns in the Dataset: <b style='color: Red'>None</b></h5>
             """,unsafe_allow_html=True)
         else: 
             st.markdown(f"""
-            <h5>Total Null columns in the Dataset: {EmptyColumns}</h5>
+            <h5>Total Null columns in the Dataset: <b style='color:Red'>{EmptyColumns}</b></h5>
             """,unsafe_allow_html=True)
         ##
         ##########################################################################################################
         ## 
-        st.text("3. Data types")
+        st.subheader("3. Data types")
         DataTypes=self.data.dtypes
         DataTypes=DataTypes.reset_index()
         DataTypes.columns=['Columns','Datatype']
-        st.dataframe(DataTypes,use_container_width=True)
+        st.dataframe(DataTypes,use_container_width=True,hide_index=True)
         
         CategoricalData=[]
         NumericalData=[]
@@ -218,7 +227,7 @@ class Check:
         ##
         ##########################################################################################################
         ##
-        st.text("4. Unique Column Values")
+        st.subheader("4. Unique Column Values")
         
         # Create a multiselect widget for selecting columns
         options = st.multiselect(
@@ -238,7 +247,7 @@ class Check:
         ##
         ##########################################################################################################
         ##
-        st.text("5. Outliers")
+        st.subheader("5. Outliers")
         SelectedColumn=option_menu(None,
                 ["CATEGORICAL COLUMNS","NUMERICAL COLUMNS"],
                 default_index=0, orientation="horizontal"
@@ -257,17 +266,27 @@ class Check:
                 if CategoricOutliers:
                     SelectedNum=option_menu(None,["Frequency Analysis","Mode Deviation"],default_index=0, orientation="horizontal")
                     if SelectedNum=="Frequency Analysis":
-                            outliers=self.FrequencyAnalysis(self.data, CategoricOutliers)
-                            col1,col2=st.columns([1,1])
-                            with col1:
-                                if outliers:
+                            Outliers = self.FrequencyAnalysis(self.data, CategoricOutliers)
+
+                            col1, col2 = st.columns([1, 1])
+
+                            with col2:
+                                if not Outliers.empty:
                                     st.markdown(f"**Rare Categories (Frequency Analysis):**")
-                                    st.dataframe(outliers,use_container_width=True)
+                                    # Display the DataFrame with rare categories and their metrics
+                                    st.dataframe(Outliers, hide_index=True,use_container_width=True)
                                 else:
                                     st.markdown("**No rare categories found (Frequency Analysis).**")
                             
-                            with col2:
-                                None
+                            # Additional metrics (Optional)
+                            with col1:
+                                total_categories = len(self.data[CategoricOutliers].unique())
+                                rare_count = len(Outliers)
+                                rare_percentage = (rare_count / total_categories) * 100
+
+                                st.markdown(f"<h4>Total Categories:</h4> <h5 style='color: green'>{total_categories}</h5>",unsafe_allow_html=True)
+                                st.markdown(f"<h4>Rare Categories Count:</h4> <h5 style='color: blue'>{rare_count}</h5>",unsafe_allow_html=True)
+                                st.markdown(f"<h4>Percentage of Rare Categories:</h4> <h5 style='color: #FF5733'>{rare_percentage:.2f}%</h5>",unsafe_allow_html=True)
 
                     elif SelectedNum=="Mode Deviation":
                             self.ModeDeviation(self.data, CategoricOutliers)
@@ -280,53 +299,57 @@ class Check:
             if SelectedColumn=='NUMERICAL COLUMNS':
                 #numeric values
                 NumericalCol = self.data.select_dtypes(include=['number']).columns.tolist()
-                NumericOutliers=st.multiselect(
+                NumericOutliers=st.selectbox(
                     "Select Columns",
                     NumericalCol
                 )
                 if NumericOutliers:
-                    for col in NumericOutliers:
-                        SelectedNum=option_menu("Numericcolumns",
+                    SelectedNum=option_menu(None,
                         ["Z-Score", "IQR", "Flooring and capping"],
                         default_index=0, orientation="horizontal"
-                        )
+                    )
 
-                        if SelectedNum=="Z-Score":
-                            outliers = self.ZScore(self.data,col)
-                        elif SelectedNum== "IQR":
-                            outliers = self.IQR(self.data,col)
-                        elif SelectedNum== "Flooring and capping":
-                            outliers = self.FlooringCapping(self.data,col)       
+                    if SelectedNum=="Z-Score":
+                        outliers = self.ZScore(self.data,NumericOutliers)
+                    elif SelectedNum== "IQR":
+                        outliers = self.IQR(self.data,NumericOutliers)
+                    elif SelectedNum== "Flooring and capping":
+                        outliers = self.FlooringCapping(self.data,NumericOutliers)       
                         
                         
-                        if not outliers.empty:
-                                col1,col2=st.columns([1,1])
-                                with col1:
-                                    st.markdown(f"""<h5>The column '{col}' has the following outliers:</h5>""", unsafe_allow_html=True)
-                                    st.write(outliers)
-                                with col2:
-                                    fig, ax = plt.subplots()
-                                    ax.boxplot(self.data[col])
-                                    st.markdown(f"""<h5>Boxplot for {col} column</h5>""",unsafe_allow_html=True)
+                    if not outliers.empty:
+                        col1,col2=st.columns([1,1])
+                        with col1:
+                            st.markdown(f"""<h5>The column '{NumericOutliers}' has the following outliers:</h5>""", unsafe_allow_html=True)
+                            st.write(outliers)
+                        with col2:
+                            fig, ax = plt.subplots()
+                            ax.boxplot(self.data[NumericOutliers])
+                            st.markdown(f"""<h5>Boxplot for {NumericOutliers} column</h5>""",unsafe_allow_html=True)
 
-                                    # Display the plot in Streamlit
-                                    st.pyplot(fig)    
-                        else:
-                            st.markdown(f"""<h5>The column '{col}' has no outliers.</h5>""", unsafe_allow_html=True)
+                            # Display the plot in Streamlit
+                            st.pyplot(fig)    
+                    else:
+                        st.markdown(f"""<h5>The column '{NumericOutliers}' has no outliers.</h5>""", unsafe_allow_html=True)
+
                 #######################################
         
 
         ##
         ##########################################################################################################
         ##
-        st.markdown("""6. Timeliness
-        Data Freshness: Determine how up-to-date the data is.
-        Time Gaps: Identify any unexpected gaps in time-series data.""")
+        st.subheader("6. Timeliness")
+        st.markdown("""
+        <b>Data Freshness:</b> Determine how up-to-date the data is.<br>
+        <b>Time Gaps:</b> Identify any unexpected gaps in time-series data.""",unsafe_allow_html=True)
 
         DateTimeCol = self.data.select_dtypes(include=['datetime']).columns.tolist()
         # st.write(DateTimeCol)
 
-        for col in DateTimeCol:
+        if len(DateTimeCol)==0:
+            st.write("<h5 style='color: Red '>No Column of Datetime is present </h5>",unsafe_allow_html=True)
+        else:
+            for col in DateTimeCol:
                 st.subheader(f" Column {col}:")
                 min_date, max_date = self.check_date_range(col)
                 st.write(f"Date range: {min_date} to {max_date}")
@@ -354,7 +377,7 @@ class Check:
         ##
         ##########################################################################################################
         ##
-        st.text("7. Descriptive Statistics(Only Numeric Columns)")
+        st.subheader("7. Descriptive Statistics(Only Numeric Columns)")
 
         # Select columns to display descriptive statistics
         selected_columns = st.multiselect("Select Columns", self.data.select_dtypes(include=['number']).columns.tolist())
