@@ -22,14 +22,14 @@ class ContactMe:
                                     """,
             ):
             
-            col1,col2=st.columns([1.5,3.5])
+            col1,col2=st.columns([1.5,2.5])
             with col1:
                 ImagePath=os.path.join('src','pictures','Man.png')
                 st.image(ImagePath,use_column_width=True)
                 
             with col2:
                 conn=st.connection("gsheets",type=GSheetsConnection)
-                st.write("""<h3> We Welcome All Feedbacks and Suggestions!</h3>""",unsafe_allow_html=True)
+                st.write("""<h4> If you have any more Feature-Ideas,Feedbacks or Suggestion. Please feel free to connect with US!</h4>""",unsafe_allow_html=True)
                 # Streamlit form for user inputs
                 with st.form("Contact Us"):
                     name = st.text_input(label="Please Enter your Name", max_chars=15, placeholder="Name")

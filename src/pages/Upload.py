@@ -185,6 +185,7 @@ class Check:
             """,unsafe_allow_html=True)
             st.dataframe(duplicatesDF,hide_index=True)
 
+        st.divider()
         ##
         ##########################################################################################################
         ## Empty columns
@@ -198,6 +199,7 @@ class Check:
             st.markdown(f"""
             <h5>Total Null columns in the Dataset: <b style='color:Red'>{EmptyColumns}</b></h5>
             """,unsafe_allow_html=True)
+        st.divider()
         ##
         ##########################################################################################################
         ## 
@@ -210,20 +212,29 @@ class Check:
         CategoricalData=[]
         NumericalData=[]
 
-        # for col in self.data.columns:
-        #     if pd.api.types.is_categorical_dtype(self.data[col]):
-        #         CategoricalData.append(col)
-        #     if pd.api.types.is_numeric_dtype(self.data[col]):
-        #         NumericalData.append(col)
-        
         NumericalData = self.data.select_dtypes(include=['number'])
         CategoricalData = self.data.select_dtypes(include=['object', 'category', 'bool'])
-
-        st.write("Categorical columns:")
-        st.write(CategoricalData)
-        st.write("Numerical columns:")
-        st.write(NumericalData)
+        DateTimeData=self.data.select_dtypes(include=['datetime'])
         
+
+        st.write("""<h5>Categorical columns:</h5>""",unsafe_allow_html=True)
+        if len(CategoricalData.columns)==0:
+            st.write("""<h6 style="color:red;">No Categorical Columns</h6>""",unsafe_allow_html=True)
+        else:    
+            st.dataframe(CategoricalData,use_container_width=True,hide_index=True)
+
+        st.write("""<h5>Numerical columns:</h5>""",unsafe_allow_html=True)
+        if len(NumericalData.columns)==0:
+            st.write("""<h6 style="color:red;">No Numerical Columns</h6>""",unsafe_allow_html=True)
+        else: 
+            st.dataframe(NumericalData,use_container_width=True,hide_index=True)
+
+        st.write("""<h5>Datetime columns:</h5>""",unsafe_allow_html=True)
+        if len(DateTimeData.columns)==0:
+            st.write("""<h6 style="color:red;">No DateTime Columns</h6>""",unsafe_allow_html=True)
+        else: 
+            st.dataframe(DateTimeData,use_container_width=True,hide_index=True)
+        st.divider()
         ##
         ##########################################################################################################
         ##
@@ -244,6 +255,7 @@ class Check:
         else:
             st.write("No columns selected.")
 
+        st.divider()
         ##
         ##########################################################################################################
         ##
@@ -334,7 +346,7 @@ class Check:
 
                 #######################################
         
-
+        st.divider()
         ##
         ##########################################################################################################
         ##
@@ -372,8 +384,7 @@ class Check:
                 is_consistent = self.frequency_consistency(col)
                 st.caption(f"Frequency consistency: {'Consistent' if is_consistent else 'Inconsistent'}")
 
-
-
+        st.divider()
         ##
         ##########################################################################################################
         ##
@@ -411,6 +422,7 @@ class Check:
         else:
             st.write("Please select columns to display descriptive statistics.")
 
+        st.divider()
         ##
         ##########################################################################################################
 
