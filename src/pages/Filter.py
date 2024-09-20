@@ -1,8 +1,20 @@
 import streamlit as st
+from src.pages.Upload import Upload
 
 class Filter:
     def __init__(self):
         pass
 
     def FilterPage():
-        st.subheader("Filterpage")
+        col1,col2=st.columns([1,3])
+        with col1:
+            None
+        with col2:
+            if 'UploadedDf' in st.session_state:
+                df=st.session_state['UploadedDf']
+                st.subheader('DATA:')
+                st.dataframe(hide_index=True)
+            else: 
+                st.subheader("You have not Uploaded any File yet")
+            
+

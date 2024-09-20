@@ -13,6 +13,24 @@ class Upload:
     def __init__(self):
         pass
 
+    @staticmethod
+    def FileUploader():
+        return st.file_uploader("", type=['csv', 'xlsx', 'xls', 'json', 'txt'], 
+                                accept_multiple_files=False, label_visibility="hidden")
+
+    def DataExtractor(df,FileType):
+                 # Read the uploaded file into a DataFrame
+        if FileType == 'csv':
+            df = pd.read_csv(df)
+        elif FileType in ['xls', 'xlsx']:
+            df = pd.read_excel(df)
+        elif FileType == 'json':
+            df = pd.read_json(df)
+        elif FileType == 'txt':
+            df = pd.read_csv(df, delimiter='\t')
+        
+        return df
+
     def Upload():
         with stylable_container(key='Upload file',
         css_styles="""
@@ -26,22 +44,17 @@ class Upload:
             st.markdown("""
             <b style="color: red;">( .csv , .xlsx, .xls, .json, .txt  file types allowed only)</b>
             """,unsafe_allow_html=True)
-            df=st.file_uploader("",type=['csv', 'xlsx', 'xls', 'json','txt'], accept_multiple_files=False,label_visibility= "hidden")
+            df=Upload.FileUploader()
             
             if df is not None:
                 
                 file_extension = df.name.split('.')[-1].lower()
                 st.write(f"You have selected a {file_extension} file.")
+                df=Upload.DataExtractor(df,file_extension)
 
-                 # Read the uploaded file into a DataFrame
-                if file_extension == 'csv':
-                    df = pd.read_csv(df)
-                elif file_extension in ['xls', 'xlsx']:
-                    df = pd.read_excel(df)
-                elif file_extension == 'json':
-                    df = pd.read_json(df)
-                elif file_extension == 'txt':
-                    df = pd.read_csv(df, delimiter='\t')
+                #storing dataframe in session state
+                st.session_state['UploadedDf']=df
+
 
                 with st.container(border=True):
                     st.subheader("Your data")
