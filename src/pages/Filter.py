@@ -7,14 +7,14 @@ class Filter:
 
     def FilterPage():
         col1,col2=st.columns([1,3])
-        with col1:
-            None
+
         with col2:
             if 'UploadedDf' in st.session_state:
-                df=st.session_state['UploadedDf']
+                df=st.session_state.UploadedDf
                 st.subheader('DATA:')
-                st.dataframe(hide_index=True)
+                st.dataframe(df,hide_index=True)
             else: 
                 st.subheader("You have not Uploaded any File yet")
-            
+        with col1:
+            None            
 
