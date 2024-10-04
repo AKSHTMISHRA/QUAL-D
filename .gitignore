@@ -2,6 +2,7 @@
 .streamlit/
 #local Environment
 DataQualEnv/
+QualD/
 
 #local Notebooks
 notebook/
